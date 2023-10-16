@@ -3,10 +3,10 @@
 
 
 ./prepare_folders.sh
+INITMODE=setup podman-compose --env pisaoutertracker.env up -d
 
-# then 
-
-podman-compose --env pisaoutertracker.env up
+# after first install you can launch with 
+podman-compose --env pisaoutertracker.env up -d
 
 
 #the file name pisaoutertracker.env is not here as it contains passwords
