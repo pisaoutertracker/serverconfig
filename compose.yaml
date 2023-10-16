@@ -1,0 +1,54 @@
+services:
+  testnode:
+    build: testnode 
+    volumes:
+      - type: bind
+        source: ${DATA_PREFIX}/scratch/opt/testnode
+        target: /opt
+  mosquitto:
+    image: eclipse-mosquitto
+    volumes:
+    - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+    - ${DATA_PREFIX}/mosquitto/log:/mosquitto/log
+    - ${DATA_PREFIX}/mosquitto/data/:/mosquitto/data
+    restart: always
+    ports:
+    - "1883:1883" 
+  influxdb:
+    image: influxdb
+    container_name: influxdb
+    restart: always
+    ports:
+      - "8086:8086"
+    volumes:
+      - ${DATA_PREFIX}/influxdb/influxdb-data:/var/lib/influxdb2
+      - ./influxdb-config/:/etc/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXUSER}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXPASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=pisaoutertracker
+      - DOCKER_INFLUXDB_INIT_BUCKET=sensor_data
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXTOKEN}
+  
+  telegraf:
+    image: telegraf
+    container_name: telegraf
+    restart: always
+    volumes:
+      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    depends_on:
+      - mosquitto
+      - influxdb
+  
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana-provisioning:/etc/grafana/provisioning
+      - ${DATA_PREFIX}/grafana/grafana-data:/var/lib/grafana
+    depends_on:
+      - influxdb
