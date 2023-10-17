@@ -1,4 +1,12 @@
 services:
+  applications:
+    build: applications 
+    image: applications
+    container_name: applications
+    volumes:
+      - ./caenconfig.xml:/config
+      - ~/Downloads/CAENHVWrapper-6.3.tgz:/CAENHVWrapper-6.3.tgz
+#    restart: always
   testnode:
     build: testnode 
     volumes:
