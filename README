@@ -14,6 +14,6 @@ podman-compose --env pisaoutertracker.env up -d
 
 reminder:
 creare la repo con 
-git clone https://github.com/pisaoutertracker/topconfig.git
+git clone https://github.com/pisaoutertracker/serverconfig.git
 poi settare una chiave id_rsa e salvarla in github, e poi fare da dentro la repo
-git remote set-url origin git@github.com:pisaoutertracker/topconfig.git
+git remote set-url origin git@github.com:pisaoutertracker/serverconfig.git
