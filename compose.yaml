@@ -19,6 +19,8 @@ services:
     volumes:
       - scripts/caen-mqtt.py:caen-mqtt.py
     restart: always
+    depends_on:
+      - caen    
   mosquitto:
     image: eclipse-mosquitto
     volumes:
