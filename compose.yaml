@@ -14,13 +14,10 @@ services:
         source: ${DATA_PREFIX}/scratch/opt/testnode
         target: /opt
   caen-mqtt:
-    build: caen-mtqq
-    container_name: caen_mqtt
-    volumes:
-      - scripts/caen-mqtt.py:caen-mqtt.py
+    build: caen-mqtt
     restart: always
-    depends_on:
-      - caen    
+    depends_on: 
+      - caen
   mosquitto:
     image: eclipse-mosquitto
     volumes:
