@@ -23,6 +23,7 @@ services:
     restart: always
     depends_on: 
       - caen
+      - mosquitto
   mosquitto:
     image: eclipse-mosquitto
     user: 499:499

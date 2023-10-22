@@ -61,6 +61,7 @@ def loop():
     """Send command on TCP socket
     """
     while(True) :
+      try:
         tcpClass = tcp_util(caencontroller,controllerport)
         tcpClass.sendMessage(message)
         data = tcpClass.socket.recv(BUFFER_SIZE).decode("utf-8")
@@ -77,7 +78,11 @@ def loop():
         ret=mqttclient.publish("/caenstatus/full",json.dumps(parsedData))
         print(ret)
         sleep(10)
+      except:
+        print("Cannot receive or send data, CAEN is off or MQTT server down, sleeping 60 seconds",flush=True)
+        sleep(60)
 
 if __name__ == "__main__":
+    print("caen-mqtt started",flush=True)
     loop()
 
