@@ -5,9 +5,18 @@
 ./prepare_folders.sh
 INITMODE=setup podman-compose --env pisaoutertracker.env up -d
 
+
+#create systemctl config
+cp podman-compose.service /etc/systemd/system/podman-compose.service
+systemctl daemon-reload
+
+
 # after first install you can launch with 
 podman-compose --env pisaoutertracker.env up -d
 
+#or use systemctl
+systemctl start podman-compose
+systemctl stop podman-compose
 
 #the file name pisaoutertracker.env is not here as it contains passwords
 

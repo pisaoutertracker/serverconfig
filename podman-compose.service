@@ -1,0 +1,17 @@
+[Unit]
+Description=Pisa Outer tracker services via podman-compose
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+WorkingDirectory=/root/serverconfig
+ExecStart=/usr/bin/podman-compose  --env pisaoutertracker.env up
+ExecStop=/usr/bin/podman-compose  --env pisaoutertracker.env  down
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target
