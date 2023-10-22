@@ -1,5 +1,6 @@
 services:
   caen:
+    user: 499:499
     build: caen 
     image: caen
     container_name: caen
@@ -14,12 +15,15 @@ services:
         source: ${DATA_PREFIX}/scratch/opt/testnode
         target: /opt
   caen-mqtt:
+    container_name: caen-mqtt
+    user: 499:499
     build: caen-mqtt
     restart: always
     depends_on: 
       - caen
   mosquitto:
     image: eclipse-mosquitto
+    user: 499:499
     volumes:
     - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
     - ${DATA_PREFIX}/mosquitto/log:/mosquitto/log
@@ -27,7 +31,9 @@ services:
     restart: always
     ports:
     - "1883:1883" 
+    container_name: moquitto
   influxdb:
+    user: 499:499
     image: influxdb
     container_name: influxdb
     restart: always
@@ -45,6 +51,7 @@ services:
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXTOKEN}
   
   telegraf:
+    user: 499:499
     image: telegraf
     container_name: telegraf
     restart: always
@@ -55,6 +62,7 @@ services:
       - influxdb
   
   grafana:
+    user: 499:499
     image: grafana/grafana
     container_name: grafana
     restart: always
@@ -65,3 +73,23 @@ services:
       - ${DATA_PREFIX}/grafana/grafana-data:/var/lib/grafana
     depends_on:
       - influxdb
+
+
+#  mongodbtestapp:
+#    image: mongodb/mongodb-community-server:6.0-ubi8
+#    environment:
+#            - CONN_STR=mongodb://${MONGODB_INITDB_ROOT_USERNAME}:${MONGODB_INITDB_ROOT_PASSWORD}@mongodb
+#    command: '/bin/bash -c "sleep 5; mongosh $$CONN_STR --eval \"show dbs;\""'
+#    depends_on:
+#      - mongodb
+  mongodb:
+    container_name: mondodb
+    image: mongodb/mongodb-community-server:6.0-ubi8
+    user: 499:499
+    environment:
+      - MONGODB_INITDB_ROOT_USERNAME=${MONGODB_INITDB_ROOT_USERNAME}
+      - MONGODB_INITDB_ROOT_PASSWORD=${MONGODB_INITDB_ROOT_PASSWORD}
+    volumes:
+      - type: bind
+        source: /scratch/opt/MongoDB/data 
+        target: /data/db
