@@ -1,12 +1,14 @@
 services:
   caen:
     user: 499:499
-    build: caen 
-    image: caen
+    build: caen
     container_name: caen
+    sysctls:
+            -  "net.ipv4.ping_group_range=0 100000"
     volumes:
       - ./caenconfig.xml:/config.xml
-#      - /scratch/CAENHVWrapper-6.3.tgz:/CAENHVWrapper-6.3.tgz
+      - ./caen/caen_server.sh:/caen_server.sh
+      - /scratch/CAENHVWrapper-6.3.tgz:/CAENHVWrapper-6.3.tgz
     restart: always
   testnode:
     build: testnode 
@@ -31,7 +33,7 @@ services:
     restart: always
     ports:
     - "1883:1883" 
-    container_name: moquitto
+    container_name: mosquitto
   influxdb:
     user: 499:499
     image: influxdb
