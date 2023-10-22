@@ -10,4 +10,5 @@ RUN ls /
 RUN tar -xzvf /CAENHVWrapper-6.3.tgz && cd CAENHVWrapper-6.3 && ./install.sh
 RUN cd power_supply && mkdir build  && cd build && cmake .. && make -j 8
 EXPOSE 7000
-CMD ["power_supply/bin/PowerSupplyController","-c", "/config.xml"]
+#CMD ["power_supply/bin/PowerSupplyController","-c", "/config.xml"]
+CMD ["./caen_server.sh"]
