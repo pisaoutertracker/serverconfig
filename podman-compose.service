@@ -4,12 +4,14 @@ After=network.target
 StartLimitIntervalSec=0
 
 [Service]
-Type=simple
-Restart=always
-RestartSec=10
+Type=oneshot
+RemainAfterExit=true
+
 WorkingDirectory=/root/serverconfig
-ExecStart=/usr/bin/podman-compose  --env pisaoutertracker.env up
+ExecStart=/usr/bin/podman-compose  --env pisaoutertracker.env up -d 
 ExecStop=/usr/bin/podman-compose  --env pisaoutertracker.env  down
+Environment=LOG_LEVEL=error 
+
 User=root
 Group=root
 
