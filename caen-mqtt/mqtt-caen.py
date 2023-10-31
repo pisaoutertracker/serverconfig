@@ -7,6 +7,8 @@ class tcp_util():
         self.ip          = ip
         self.port        = port
         self.socket      = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.settimeout(10)
+
         self.headerBytes = 8 
 
         self.connectSocket()
@@ -64,7 +66,7 @@ def loop():
       try:
         tcpClass = tcp_util(caencontroller,controllerport)
         tcpClass.sendMessage(message)
-        data = tcpClass.socket.recv(BUFFER_SIZE).decode("utf-8")
+        data = tcpClass.socket.recv(BUFFER_SIZE)[8:].decode("utf-8")
         print(data)
         parsedData={}
         for token in data.split(',') :
@@ -72,7 +74,7 @@ def loop():
                 key,value=token.split(":")
                 value=float(value)
                 parsedData[key]=value
-        print(json.dumps(parsedData,indent=4))
+        print(json.dumps(parsedData,indent=4),flush=True)
         mqttclient= paho.Client("CAEN")
         mqttclient.connect(broker,brokerport)
         ret=mqttclient.publish("/caenstatus/full",json.dumps(parsedData))

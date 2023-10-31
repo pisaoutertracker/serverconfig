@@ -1,4 +1,21 @@
 services:
+  testmongo:
+    user: 499:499
+    build: testmongo
+    container_name: testmongo
+    volumes:
+      - ./testmongo:/testmongo
+    environment:
+      - MONGO_USERNAME=${MONGODB_INITDB_ROOT_USERNAME}
+      - MONGO_PASSWORD=${MONGODB_INITDB_ROOT_PASSWORD}
+      - MONGO_HOST_NAME=mongodb
+      - MONGO_DB_NAME=test_db
+    sysctls:
+            -  "net.ipv4.ping_group_range=0 100000"
+    restart: always
+    ports:
+    - "5000:5000"
+
   caen:
     user: 499:499
     build: caen
@@ -10,6 +27,8 @@ services:
       - ./caen/caen_server.sh:/caen_server.sh
       - /scratch/CAENHVWrapper-6.3.tgz:/CAENHVWrapper-6.3.tgz
     restart: always
+    ports:
+    - "7000:7000" 
   testnode:
     build: testnode 
     volumes:
@@ -96,3 +115,5 @@ services:
       - type: bind
         source: /scratch/opt/MongoDB/data 
         target: /data/db
+    ports:
+      - "27017:27017"
