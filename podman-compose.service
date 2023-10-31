@@ -8,8 +8,8 @@ Type=oneshot
 RemainAfterExit=true
 
 WorkingDirectory=/root/serverconfig
-ExecStart=/usr/bin/podman-compose  --env pisaoutertracker.env up -d 
-ExecStop=/usr/bin/podman-compose  --env pisaoutertracker.env  down
+ExecStart=/usr/bin/podman-compose  --env /root/pisaoutertracker.env up -d 
+ExecStop=/usr/bin/podman-compose  --env /root/pisaoutertracker.env  down
 Environment=LOG_LEVEL=error 
 
 User=root

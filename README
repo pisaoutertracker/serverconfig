@@ -3,7 +3,7 @@
 
 
 ./prepare_folders.sh
-INITMODE=setup podman-compose --env pisaoutertracker.env up -d
+INITMODE=setup podman-compose --env /root/pisaoutertracker.env up -d
 
 
 #create systemctl config
