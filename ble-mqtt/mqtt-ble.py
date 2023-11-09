@@ -8,16 +8,14 @@ brokerport = 1883
 
 
 def ble_status():
-    json_status = {}
     try:
         for current_devices in DevScanner():
             for device in current_devices:
                 if device.temp:
-                    print(json_status)
                     mqqttclient = paho.Client("BLE")
                     mqqttclient.connect(broker, brokerport)
                     ret = mqqttclient.publish(
-                        f"/ble/{device.device.addr}", json.dumps(json_status)
+                        f"/ble/{device.device.addr}", json.dumps(device.data)
                     )
                     print(ret)
     except:
