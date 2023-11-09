@@ -122,7 +122,7 @@ def loop():
                 status_list = therm.get_status()
                 for status, publish_topic in zip(status_list, publish_topic_list):
                     print(json.dumps(status, indent=4), flush=True)
-                    mqttclient = paho.Client("THERMAL")
+                    mqttclient = paho.Client("COLDROOM")
                     mqttclient.connect(broker, brokerport)
                     ret = mqttclient.publish(
                         f"/thermalstatus/{publish_topic}", json.dumps(status)

@@ -35,6 +35,16 @@ services:
       - type: bind
         source: ${DATA_PREFIX}/scratch/opt/testnode
         target: /opt
+  coldroom-mqtt:
+    container_name: coldroom-mqtt
+    user: 499:499
+    build: coldroom-mqtt
+    restart: always
+    environment:
+      - THERMAL_USERNAME=${THERMAL_USERNAME}
+      - THERMAL_PASSWORD=${THERMAL_PASSWORD}
+    depends_on: 
+      - mosquitto
   caen-mqtt:
     container_name: caen-mqtt
     user: 499:499
