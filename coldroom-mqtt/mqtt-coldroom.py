@@ -125,7 +125,7 @@ def loop():
                     mqttclient = paho.Client("COLDROOM")
                     mqttclient.connect(broker, brokerport)
                     ret = mqttclient.publish(
-                        f"/thermalstatus/{publish_topic}", json.dumps(status)
+                        f"/coldroom/{publish_topic}", json.dumps(status)
                     )  # signle json dump?
                     print(ret)
                 time.sleep(10)
