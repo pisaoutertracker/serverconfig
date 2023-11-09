@@ -101,7 +101,7 @@ class thermal_status:
             return self.is_active
         except:
             print("Error in checking status")
-
+            exit(1)
 
 import paho.mqtt.client as paho
 import json
