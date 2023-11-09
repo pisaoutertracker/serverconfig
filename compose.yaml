@@ -35,6 +35,19 @@ services:
       - type: bind
         source: ${DATA_PREFIX}/scratch/opt/testnode
         target: /opt
+  ble-mqtt:
+    user: 0:0
+    container_name: ble-mqtt
+    build: ble-mqtt
+    privileged: true
+    tty: true
+    stdin_open: true
+    restart: always
+    network_mode: host
+    volumes:
+      - /var/run/dbus/:/var/run/dbus/:z
+    #depends_on: 
+    #  - mosquitto
   coldroom-mqtt:
     container_name: coldroom-mqtt
     user: 499:499
