@@ -14,10 +14,11 @@ def ble_status():
                 if device.temp:
                     mqqttclient = paho.Client("BLE")
                     mqqttclient.connect(broker, brokerport)
+                    msg=json.dumps(dict(filter(lambda x: x[0] in goodkeys, device.data.items())))
                     ret = mqqttclient.publish(
-                        f"/ble/{device.device.addr}", json.dumps(dict(filter(lambda x: x[0] in goodkeys, device.data.items())))
+                        f"/ble/{device.device.addr}",msg
                     )
-                    print(ret)
+                    print(ret,msg)
 #    except:
 #        print("Error in loop", flush=True)
 #        time.sleep(60)

@@ -54,8 +54,8 @@ services:
     build: coldroom-mqtt
     restart: always
     environment:
-      - THERMAL_USERNAME=${THERMAL_USERNAME}
-      - THERMAL_PASSWORD=${THERMAL_PASSWORD}
+      - COLDROOM_USERNAME=${COLDROOM_USERNAME}
+      - COLDROOM_PASSWORD=${COLDROOM_PASSWORD}
     depends_on: 
       - mosquitto
   caen-mqtt:
