@@ -1,3 +1,3 @@
 [submodule "testmongo"]
-	path = testmongo
+	path = localdb
 	url = git@github.com:pisaoutertracker/testmongo.git
