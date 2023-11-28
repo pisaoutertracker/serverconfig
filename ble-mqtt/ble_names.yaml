@@ -1,0 +1,5 @@
+# BLE names for mqtt. This file should be manually updated using the device address and name.
+
+"f3:dc:57:52:9f:cc": "ble1"
+"dc:57:52:9f:cc:a5": "ble2"
+"e5:e2:15:6f:f7:cd": "ble3"
