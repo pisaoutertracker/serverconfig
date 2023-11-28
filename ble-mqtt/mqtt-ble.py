@@ -23,7 +23,11 @@ def ble_status():
     for current_devices in DevScanner():
         for device in current_devices:
             if device.temp:
-                device_name = names[device.device.addr]
+                if device.device.addr in names:
+                    device_name = names[device.device.addr]
+                else:
+                    logging.error(f"Unknown device: {device.device.addr}")
+                    raise KeyError
                 mqqttclient = paho.Client("BLE")
                 mqqttclient.connect(broker, brokerport)
                 msg = json.dumps(
