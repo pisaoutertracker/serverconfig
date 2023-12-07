@@ -1,10 +1,10 @@
 services:
-  testmongo:
+  localdb:
     user: 499:499
-    build: testmongo
-    container_name: testmongo
+    build: localdb
+    container_name: localdb
     volumes:
-      - ./testmongo:/testmongo
+      - ./localdb:/localdb
     environment:
       - MONGO_USERNAME=${MONGODB_INITDB_ROOT_USERNAME}
       - MONGO_PASSWORD=${MONGODB_INITDB_ROOT_PASSWORD}
