@@ -6,10 +6,10 @@ services:
     volumes:
       - ./localdb:/localdb
     environment:
-      - MONGO_USERNAME=${MONGODB_INITDB_ROOT_USERNAME}
-      - MONGO_PASSWORD=${MONGODB_INITDB_ROOT_PASSWORD}
-      - MONGO_HOST_NAME=mongodb
-      - MONGO_DB_NAME=test_db
+      - MONGO_DB_NAME=prod_db
+      - MONGO_URI="mongodb://${MONGODB_INITDB_ROOT_USERNAME}:${MONGODB_INITDB_ROOT_PASSWORD}@mongodb:27017"
+      - TESTING=False
+
     sysctls:
             -  "net.ipv4.ping_group_range=0 100000"
     restart: always
