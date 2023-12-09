@@ -19,11 +19,12 @@ brokerport = 1883
 # Only publish these keys
 goodkeys = ["temp", "humidity"]
 
+
 def ble_status():
     """Scan for BLE devices and publish their data to MQTT"""
     for current_devices in DevScanner():
         for device in current_devices:
-            # Check if the device is ours 
+            # Check if the device is ours
             if device.temp and device.model == "T" and device.mode == "00":
                 # Check if we know the device name
                 if device.device.addr in names:
@@ -39,7 +40,7 @@ def ble_status():
                 msg = json.dumps(
                     dict(filter(lambda x: x[0] in goodkeys, device.data.items()))
                 )
-                ret = mqqttclient.publish(f"/ble/{device.device.addr}", msg)
+                ret = mqqttclient.publish(f"/ble/{device_name}", msg)
                 logging.info(f"{device_name} ({device.device.addr}) {msg}")
 
 
