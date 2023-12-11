@@ -7,7 +7,7 @@ services:
       - ./localdb:/localdb
     environment:
       - MONGO_DB_NAME=prod_db
-      - MONGO_URI="mongodb://${MONGODB_INITDB_ROOT_USERNAME}:${MONGODB_INITDB_ROOT_PASSWORD}@mongodb:27017"
+      - MONGO_URI=mongodb://${MONGODB_INITDB_ROOT_USERNAME}:${MONGODB_INITDB_ROOT_PASSWORD}@mongodb:27017
       - TESTING=False
 
     sysctls:
@@ -46,6 +46,7 @@ services:
     network_mode: host
     volumes:
       - /var/run/dbus/:/var/run/dbus/:z
+      - ./ble-mqtt/ble_names.yaml:/scripts/ble_names.yaml
     #depends_on: 
     #  - mosquitto
   coldroom-mqtt:
