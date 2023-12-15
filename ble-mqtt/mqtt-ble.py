@@ -40,7 +40,7 @@ def ble_status():
                 msg = json.dumps(
                     dict(filter(lambda x: x[0] in goodkeys, device.data.items()))
                 )
-                ret = mqqttclient.publish(f"/ble/{device_name}", msg)
+                ret = mqqttclient.publish(f"/ble/{device_name}", msg,retain=True)
                 logging.info(f"{device_name} ({device.device.addr}) {msg}")
 
 
