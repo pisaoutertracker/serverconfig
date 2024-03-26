@@ -62,6 +62,7 @@ import json
 def loop():
     """Send command on TCP socket
     """
+    alarm=0
     while(True) :
       try:
         tcpClass = tcp_util(caencontroller,controllerport)
@@ -79,9 +80,16 @@ def loop():
         mqttclient.connect(broker,brokerport)
         ret=mqttclient.publish("/caenstatus/full",json.dumps(parsedData))
         print(ret)
-        sleep(10)
+        sleep(3)
+        if alarm > 1 :
+          mqttclient.publish("/alarm","CAEN is back (%s)"%alarm)
+
+        alarm=0
       except:
         print("Cannot receive or send data, CAEN is off or MQTT server down, sleeping 60 seconds",flush=True)
+        if alarm % 60 == 1 :
+          mqttclient.publish("/alarm","Cannot receive or send data, CAEN is off or MQTT server down (%s)"%alarm)
+        alarm+=1
         sleep(60)
 
 if __name__ == "__main__":

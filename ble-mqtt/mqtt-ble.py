@@ -2,6 +2,9 @@ import logging
 import yaml
 import json
 import paho.mqtt.client as paho
+from paho.mqtt.properties import Properties
+from paho.mqtt.packettypes import PacketTypes 
+
 from switchbotmeter import DevScanner
 
 
@@ -19,6 +22,8 @@ brokerport = 1883
 # Only publish these keys
 goodkeys = ["temp", "humidity"]
 
+publish_properties = Properties(PacketTypes.PUBLISH)
+publish_properties.MessageExpiryInterval = 60
 
 def ble_status():
     """Scan for BLE devices and publish their data to MQTT"""
@@ -40,7 +45,7 @@ def ble_status():
                 msg = json.dumps(
                     dict(filter(lambda x: x[0] in goodkeys, device.data.items()))
                 )
-                ret = mqqttclient.publish(f"/ble/{device_name}", msg,retain=True)
+                ret = mqqttclient.publish(f"/ble/{device_name}", msg,retain=True,  properties=publish_properties)
                 logging.info(f"{device_name} ({device.device.addr}) {msg}")
 
 
