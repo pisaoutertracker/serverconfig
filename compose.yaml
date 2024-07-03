@@ -29,6 +29,14 @@ services:
     restart: always
     ports:
     - "7000:7000" 
+  marta-mqtt:
+    user: 499:499
+    build: marta-mqtt
+    container_name: marta-mqtt
+    volumes:
+      - ./marta_registers.yml:/marta_registers.yml
+      - ./marta-mqtt/:/scripts/
+    restart: always
   testnode:
     build: testnode 
     volumes:
