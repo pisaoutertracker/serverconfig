@@ -28,6 +28,10 @@
    <Channel ID="CR02" Channel="5" Slot="7" InUse="Yes" I0Set="1.5" V0Set="10.5" RUp="5" RDwn="5" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="5" OVVThr="15"/>
    <Channel ID="CR03" Channel="6" Slot="7" InUse="Yes" I0Set="1.5" V0Set="10.6" RUp="5" RDwn="5" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="5" OVVThr="15"/>
    <Channel ID="CR04" Channel="7" Slot="7" InUse="Yes" I0Set="1.5" V0Set="10.7" RUp="5" RDwn="5" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="5" OVVThr="15"/>
+   <Channel ID="INT01" Channel="0" Slot="11" InUse="Yes" I0Set="1.0" V0Set="10.4" RUp="5" RDwn="5" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="5" OVVThr="15"/>
+   <Channel ID="INT02" Channel="1" Slot="11" InUse="Yes" I0Set="1.5" V0Set="10.5" RUp="5" RDwn="5" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="5" OVVThr="15"/>
+   <Channel ID="INT03" Channel="2" Slot="11" InUse="Yes" I0Set="1.5" V0Set="10.6" RUp="5" RDwn="5" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="5" OVVThr="15"/>
+   <Channel ID="INT04" Channel="3" Slot="11" InUse="Yes" I0Set="1.5" V0Set="10.7" RUp="5" RDwn="5" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="5" OVVThr="15"/>
 
   </PowerSupply>
 </Devices>
