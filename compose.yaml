@@ -5,13 +5,14 @@ services:
     container_name: localdb
     volumes:
       - ./localdb:/localdb
+      - /scratch/opt/logbook-attachments:/attachments
     environment:
       - MONGO_DB_NAME=prod_db
       - MONGO_URI=mongodb://${MONGODB_INITDB_ROOT_USERNAME}:${MONGODB_INITDB_ROOT_PASSWORD}@mongodb:27017
       - TESTING=False
-
     sysctls:
             -  "net.ipv4.ping_group_range=0 100000"
+            -  "net.ipv6.conf.all.disable_ipv6=1"
     restart: always
     ports:
     - "5000:5000"

@@ -125,7 +125,9 @@ class MARTAClient(object):
 
     def update_status(self):
         if self.state is MARTAStates.INIT or self.state is MARTAStates.DISCONNECTED:
-            return
+            print("Waiting 30s and trying to reconnect")
+            time.sleep(30)
+            device.fsm_connect_modbus()
 
         try:
             self.modbus_manager.update()
