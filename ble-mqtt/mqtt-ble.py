@@ -4,6 +4,7 @@ import json
 import paho.mqtt.client as paho
 from paho.mqtt.properties import Properties
 from paho.mqtt.packettypes import PacketTypes 
+import binascii,struct
 
 from switchbotmeter import DevScanner
 
@@ -62,7 +63,7 @@ def ble_status():
                                 msg=f'"CO2":{co2},"temp":{temp},"humidiy":{humidity}'
 
             if msg != "":    
-                mqqttclient = paho.Client("BLE")
+                mqqttclient = paho.Client(paho.CallbackAPIVersion.VERSION1, "BLE")
                 mqqttclient.connect(broker, brokerport)
                 # Only publish the keys we want
                 ret = mqqttclient.publish(f"/ble/{device_name}", msg,retain=True,  properties=publish_properties)
