@@ -9,7 +9,7 @@
 #CMD ["python3","/scripts/mqtt-caen.py"] 
 
 
-FROM python:3.7-alpine
+FROM python:3.11-alpine
 RUN pip install paho-mqtt requests 
 RUN apk add --update build-base glib-dev
 RUN pip install switchbotmeter
