@@ -60,7 +60,8 @@ def ble_status():
                                 if  temp_ticks !=0 and co2!= 0:
                                    temp = -45 + ((175.0 * temp_ticks) / (2**16 - 1))
                                    humidity = (100.0 * humidity_ticks) / (2**16 - 1)
-                                msg=f'"CO2":{co2},"temp":{temp},"humidiy":{humidity}'
+                                msg="{"+f'"CO2":{co2},"temp":{temp},"humidity":{humidity}'+"}"
+                                print(msg)
 
             if msg != "":    
                 mqqttclient = paho.Client(paho.CallbackAPIVersion.VERSION1, "BLE")
