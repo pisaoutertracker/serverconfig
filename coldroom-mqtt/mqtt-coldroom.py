@@ -125,7 +125,7 @@ def loop():
         if active:
             status_list = therm.get_status()
             for status, publish_topic in zip(status_list, publish_topic_list):
-                mqttclient = paho.Client("COLDROOM")
+                mqttclient = paho.Client(paho.CallbackAPIVersion.VERSION1,"COLDROOM")
                 mqttclient.connect(broker, brokerport)
                 ret = mqttclient.publish(
                     f"/coldroom/{publish_topic}", json.dumps(status)

@@ -16,6 +16,9 @@ services:
     restart: always
     ports:
     - "5000:5000"
+    logging:
+      options:
+        max-size: 50m
 
   caen:
     user: 499:499
@@ -30,6 +33,10 @@ services:
     restart: always
     ports:
     - "7000:7000" 
+    logging:
+      options:
+        max-size: 50m
+
   marta-mqtt:
     user: 499:499
     build: marta-mqtt
@@ -38,12 +45,18 @@ services:
       - ./marta_registers.yml:/marta_registers.yml
       - ./marta-mqtt/:/scripts/
     restart: always
+    logging:
+      options:
+        max-size: 50m
   testnode:
     build: testnode 
     volumes:
       - type: bind
         source: ${DATA_PREFIX}/scratch/opt/testnode
         target: /opt
+    logging:
+      options:
+        max-size: 50m
   ble-mqtt:
     user: 0:0
     container_name: ble-mqtt
@@ -58,6 +71,9 @@ services:
       - ./ble-mqtt/:/scripts/
     #depends_on: 
     #  - mosquitto
+    logging:
+      options:
+        max-size: 50m
   coldroom-mqtt:
     container_name: coldroom-mqtt
     user: 499:499
@@ -68,6 +84,9 @@ services:
       - COLDROOM_PASSWORD=${COLDROOM_PASSWORD}
     depends_on: 
       - mosquitto
+    logging:
+      options:
+        max-size: 50m
   caen-mqtt:
     container_name: caen-mqtt
     user: 499:499
@@ -76,6 +95,9 @@ services:
     depends_on: 
       - caen
       - mosquitto
+    logging:
+      options:
+        max-size: 50m
   mosquitto:
     image: eclipse-mosquitto
     user: 499:499
@@ -87,6 +109,9 @@ services:
     ports:
     - "1883:1883" 
     container_name: mosquitto
+    logging:
+      options:
+        max-size: 50m
   influxdb:
     user: 499:499
     image: influxdb
@@ -104,6 +129,9 @@ services:
       - DOCKER_INFLUXDB_INIT_ORG=pisaoutertracker
       - DOCKER_INFLUXDB_INIT_BUCKET=sensor_data
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXTOKEN}
+    logging:
+      options:
+        max-size: 50m
   
   telegraf:
     user: 499:499
@@ -115,6 +143,9 @@ services:
     depends_on:
       - mosquitto
       - influxdb
+    logging:
+      options:
+        max-size: 50m
   
   grafana:
     user: 499:499
@@ -126,8 +157,13 @@ services:
     volumes:
       - ./grafana-provisioning:/etc/grafana/provisioning
       - ${DATA_PREFIX}/grafana/grafana-data:/var/lib/grafana
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
     depends_on:
       - influxdb
+    logging:
+      options:
+        max-size: 50m
 
 
 #  mongodbtestapp:
@@ -150,3 +186,6 @@ services:
         target: /data/db
     ports:
       - "27017:27017"
+    logging:
+      options:
+        max-size: 50m
