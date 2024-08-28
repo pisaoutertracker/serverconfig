@@ -76,7 +76,7 @@ def loop():
                 value=float(value)
                 parsedData[key]=value
         print(json.dumps(parsedData,indent=4),flush=True)
-        mqttclient= paho.Client("CAEN")
+        mqttclient = paho.Client(paho.CallbackAPIVersion.VERSION1, "CAEN")
         mqttclient.connect(broker,brokerport)
         ret=mqttclient.publish("/caenstatus/full",json.dumps(parsedData))
         print(ret)
@@ -95,4 +95,3 @@ def loop():
 if __name__ == "__main__":
     print("caen-mqtt started",flush=True)
     loop()
-
