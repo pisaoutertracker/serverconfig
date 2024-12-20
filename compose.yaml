@@ -24,6 +24,8 @@ services:
     user: 499:499
     build: caen
     container_name: caen
+    environment:
+      - TZ=Europe/Rome
     sysctls:
             -  "net.ipv4.ping_group_range=0 100000"
     volumes:

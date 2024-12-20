@@ -13,7 +13,8 @@ class ThermalStatus:
 
     def __init__(self):
         # Base url of the coldroom webserver
-        self.base_url = "http://11.0.0.1"
+#        self.base_url = "http://11.0.0.1" #wifi
+        self.base_url = "http://192.168.0.254" #cabled 
         # Headers for the requests
         self.headers = {
             "Accept": "application/json, text/javascript, */*; q=0.01",
