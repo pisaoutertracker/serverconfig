@@ -7,7 +7,7 @@ class tcp_util():
         self.ip          = ip
         self.port        = port
         self.socket      = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.settimeout(10)
+        self.socket.settimeout(1)
 
         self.headerBytes = 8 
 
@@ -67,30 +67,47 @@ def loop():
       try:
         tcpClass = tcp_util(caencontroller,controllerport)
         tcpClass.sendMessage(message)
-        data = tcpClass.socket.recv(BUFFER_SIZE)[8:].decode("utf-8")
-        print(data)
+        data = b''
+        while(True) :
+            try:
+                chunk = tcpClass.socket.recv(BUFFER_SIZE)[8:]
+                if not chunk:
+                    break
+                data+=chunk
+            except:
+                break
+        print(data[-10:])
+        data=data.decode("utf-8")
         parsedData={}
         for token in data.split(',') :
             if token.startswith(psid):
                 key,value=token.split(":")
                 value=float(value)
                 parsedData[key]=value
-        print(json.dumps(parsedData,indent=4),flush=True)
+        #print(json.dumps(parsedData,indent=4),flush=True)
         mqttclient = paho.Client(paho.CallbackAPIVersion.VERSION1, "CAEN")
         mqttclient.connect(broker,brokerport)
         ret=mqttclient.publish("/caenstatus/full",json.dumps(parsedData))
-        print(ret)
-        sleep(3)
-        if alarm > 1 :
-          mqttclient.publish("/alarm","CAEN is back (%s)"%alarm)
-
+        print("ok")
+        sleep(1)
+        if alarm > 5 :
+           print("We are back" , alarm)
+           mqttclient.publish("/alarm","CAEN is back (%s)"%alarm)
         alarm=0
-      except:
-        print("Cannot receive or send data, CAEN is off or MQTT server down, sleeping 60 seconds",flush=True)
-        if alarm % 60 == 1 :
-          mqttclient.publish("/alarm","Cannot receive or send data, CAEN is off or MQTT server down (%s)"%alarm)
+
+      except Exception as e:
+        print(e)
         alarm+=1
-        sleep(60)
+        if alarm % 60 == 6 :
+          print("Sending alarm",alarm)
+          mqttclient.publish("/alarm","Cannot receive or send data, CAEN is off or MQTT server down (%s)"%alarm)
+        # retry first a few times
+        if alarm > 3:
+            print("Cannot receive or send data, CAEN is off or MQTT server down, sleeping 60 seconds",alarm,flush=True)
+            sleep(60)
+        else:
+            sleep(1)
+            print("Cannot receive or send data, CAEN is off or MQTT server down, retrying...",alarm,flush=True)
 
 if __name__ == "__main__":
     print("caen-mqtt started",flush=True)
