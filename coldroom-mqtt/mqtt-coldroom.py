@@ -2,19 +2,26 @@ import os
 import requests
 import time
 import logging
+import paho.mqtt.client as paho
+import json
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
+
 class ThermalStatus:
     """Class to get the status of the coldroom"""
 
+    TOPIC_CMDS = "/coldroom/cmd"
+    TOPIC_RESP = "/coldroom/alarm"
+    TOPIC_ROOT = "/coldroom"
+
     def __init__(self):
         # Base url of the coldroom webserver
-#        self.base_url = "http://11.0.0.1" #wifi
-        self.base_url = "http://192.168.0.254" #cabled 
+        self.base_url_1 = "http://192.168.0.254"  # cabled
+        self.base_url_2 = "http://11.0.0.1"  # wifi
         # Headers for the requests
         self.headers = {
             "Accept": "application/json, text/javascript, */*; q=0.01",
@@ -30,16 +37,33 @@ class ThermalStatus:
             "light_door_status": [],
             "status": [],
             "dashboard": [],
+            "refresh": [],
         }
         # Start the session
         self.session = requests.Session()
         # Flag to check if the cookie session is active (default False)
         self.is_active = False
 
+        # Command handlers
+        self.command_handlers = {
+            "set_temperature": self.set_temperature,
+            "set_humidity": self.set_humidity,
+            "set_light": self.set_light,
+        }
+
     def login_session(self):
         """Login to the session"""
-        login_url = f"{self.base_url}/httpd_auth.fcgi/accounts/login/"
-        login_response = self.session.get(login_url, headers=self.headers, verify=False)
+        login_url = "{base_url}/httpd_auth.fcgi/accounts/login/"
+        try:
+            login_response = self.session.get(
+                login_url.format(base_url=self.base_url_1), headers=self.headers, verify=False
+            )
+            self.base_url = self.base_url_1
+        except requests.exceptions.ConnectionError:
+            login_response = self.session.get(
+                login_url.format(base_url=self.base_url_2), headers=self.headers, verify=False
+            )
+            self.base_url = self.base_url_2
         logging.info("Session started")
 
         return login_response
@@ -64,15 +88,13 @@ class ThermalStatus:
         }
         self.session.headers.update(auth_headers)
 
-        auth_response = self.session.post(
-            auth_url, json=login_data, verify=False, cookies=self.session.cookies
-        )
+        auth_response = self.session.post(auth_url, json=login_data, verify=False, cookies=self.session.cookies)
         try:
             self.session.cookies["sessionid"]
         except KeyError:
             logging.error("Authentication failed")
             raise
-        
+
         logging.info("Authenticated")
 
         return auth_response
@@ -107,33 +129,83 @@ class ThermalStatus:
                         logging.info(f"Session active: expires {time.ctime(expiration_time)}")
         return self.is_active
 
+    def connect_mqtt(self, broker, brokerport):
+        """Connect to the mqtt broker"""
+        mqttclient = paho.Client(paho.CallbackAPIVersion.VERSION1, "COLDROOM")
+        mqttclient.connect(broker, brokerport)
+        return mqttclient
 
-import paho.mqtt.client as paho
-import json
+    def on_connect(self, client, userdata, flags, rc):
+        """On connect callback"""
+        logging.info(f"Connected with result code {rc}")
+        if rc == 0:
+            logging.info("Connection successful")
+            client.subscribe(self.TOPIC_CMDS)
+            # client.publish(f"/coldroom/status")
+        else:
+            logging.error(f"Connection failed with result code {rc}")
+
+    def on_disconnect(self, client, userdata, rc):
+        """On disconnect callback"""
+        if rc != 0:
+            logging.error(f"Unexpected disconnection: {rc}")
+        else:
+            logging.info("Disconnected")
+
+    def on_message(self, client, userdata, message):
+        """On message callback"""
+        try:
+            command = message.topic.split("/")[-1]
+            payload = json.loads(message.payload)
+            self.command_handlers[command](payload)
+        except Exception as e:
+            logging.error(f"Error: {e}")
+            self.publish_response(client, command, {"status": "error", "message": str(e)})
+
+    def publish_response(self, client, command, response):
+        """Publish the response to the mqtt broker"""
+        topic = f"{self.TOPIC_RESP}/{command}"
+        client.publish(topic, json.dumps(response))
+
+    def set_light(self, payload):
+        """Set the light of the coldroom"""
+        # Example of url http://localhost:1080/spes.fcgi/setvars?v289=1
+        url = f"{self.base_url}/spes.fcgi/setvars?v289={payload['status']}"
+        response = self.session.get(url, headers=self.headers, verify=False, cookies=self.session.cookies)
+        logging.info(f"Light set to {payload['status']}")
+        return response
+
+    def set_temperature(self, payload):
+        url = f"{self.base_url}/spes.fcgi/setvars?v380={payload['value']}"
+        response = self.session.get(url, headers=self.headers, verify=False, cookies=self.session.cookies)
+        logging.info(f"Temperature set to {payload['value']}")
+        return response
+
+    def set_humidity(self, payload):
+        url = f"{self.base_url}/spes.fcgi/setvars?v382={payload['value']}"
+        response = self.session.get(url, headers=self.headers, verify=False, cookies=self.session.cookies)
+        logging.info(f"Humidity set to {payload['value']}")
+        return response
+
+    def loop(self, client):
+        """Run the loop"""
+        self.login_session()
+        while True:
+            active = self.check_status()
+            if active:
+                status_list = self.get_status()
+                for status, publish_topic in zip(status_list, list(self.json_interesting_dict.keys())):
+                    ret = client.publish(f"/coldroom/{publish_topic}", json.dumps(status))
+                time.sleep(1)
+            else:
+                self.authenticate()
+
 
 broker = "192.168.0.45"
 brokerport = 1883
-publish_topic_list = ["lightdoor", "status", "dashboard"]
-
-
-def loop():
-    """Daemon"""
-    # Start the session
-    therm = ThermalStatus()
-    therm.login_session()
-    while True:
-        active = therm.check_status()
-        if active:
-            status_list = therm.get_status()
-            for status, publish_topic in zip(status_list, publish_topic_list):
-                mqttclient = paho.Client(paho.CallbackAPIVersion.VERSION1,"COLDROOM")
-                mqttclient.connect(broker, brokerport)
-                ret = mqttclient.publish(
-                    f"/coldroom/{publish_topic}", json.dumps(status)
-                )
-            time.sleep(1)
-        else:
-            therm.authenticate()
 
 if __name__ == "__main__":
-    loop()
+
+    coldroom = ThermalStatus()
+    client = coldroom.connect_mqtt(broker, brokerport)
+    coldroom.loop(client)
