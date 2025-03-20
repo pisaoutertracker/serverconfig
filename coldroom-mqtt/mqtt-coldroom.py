@@ -2,7 +2,7 @@ import os
 import requests
 import time
 import logging
-import paho.mqtt.client as paho
+import paho.mqtt.client as mqtt
 import json
 
 logging.basicConfig(
@@ -14,7 +14,7 @@ logging.basicConfig(
 class ThermalStatus:
     """Class to get the status of the coldroom"""
 
-    TOPIC_CMDS = "/coldroom/cmd"
+    TOPIC_CMDS = "/coldroom/cmd/#"
     TOPIC_RESP = "/coldroom/alarm"
     TOPIC_ROOT = "/coldroom"
 
@@ -37,7 +37,6 @@ class ThermalStatus:
             "light_door_status": [],
             "status": [],
             "dashboard": [],
-            "refresh": [],
         }
         # Start the session
         self.session = requests.Session()
@@ -131,36 +130,39 @@ class ThermalStatus:
 
     def connect_mqtt(self, broker, brokerport):
         """Connect to the mqtt broker"""
-        mqttclient = paho.Client(paho.CallbackAPIVersion.VERSION1, "COLDROOM")
-        mqttclient.connect(broker, brokerport)
-        return mqttclient
 
-    def on_connect(self, client, userdata, flags, rc):
-        """On connect callback"""
-        logging.info(f"Connected with result code {rc}")
-        if rc == 0:
-            logging.info("Connection successful")
-            client.subscribe(self.TOPIC_CMDS)
-            # client.publish(f"/coldroom/status")
-        else:
-            logging.error(f"Connection failed with result code {rc}")
+        def on_connect(client, userdata, flags, rc):
+            """On connect callback"""
+            logging.info(f"Connected with result code {rc}")
+            if rc == 0:
+                logging.info("Connection successful")
+                client.subscribe(self.TOPIC_CMDS)
+            else:
+                logging.error(f"Connection failed with result code {rc}")
 
-    def on_disconnect(self, client, userdata, rc):
-        """On disconnect callback"""
-        if rc != 0:
-            logging.error(f"Unexpected disconnection: {rc}")
-        else:
-            logging.info("Disconnected")
+        def on_disconnect(client, userdata, rc):
+            """On disconnect callback"""
+            if rc != 0:
+                logging.error(f"Unexpected disconnection: {rc}")
+            else:
+                logging.info("Disconnected")
 
-    def on_message(self, client, userdata, message):
-        """On message callback"""
-        try:
-            command = message.topic.split("/")[-1]
-            payload = json.loads(message.payload)
-            self.command_handlers[command](payload)
-        except Exception as e:
-            logging.error(f"Error: {e}")
-            self.publish_response(client, command, {"status": "error", "message": str(e)})
+        def on_message(client, userdata, message):
+            """On message callback"""
+            try:
+                command = message.topic.split("/")[-1]
+                payload = json.loads(message.payload)
+                self.command_handlers[command](payload)
+            except Exception as e:
+                logging.error(f"Error: {e}")
+                self.publish_response(client, command, {"status": "error", "message": str(e)})
+
+        client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, "COLDROOM")
+        client.on_connect = on_connect
+        client.on_disconnect = on_disconnect
+        client.on_message = on_message
+        client.connect(broker, brokerport)
+        return client
 
     def publish_response(self, client, command, response):
         """Publish the response to the mqtt broker"""
@@ -176,12 +178,14 @@ class ThermalStatus:
         return response
 
     def set_temperature(self, payload):
+        """Set the temperature of the coldroom"""
         url = f"{self.base_url}/spes.fcgi/setvars?v380={payload['value']}"
         response = self.session.get(url, headers=self.headers, verify=False, cookies=self.session.cookies)
         logging.info(f"Temperature set to {payload['value']}")
         return response
 
     def set_humidity(self, payload):
+        """Set the humidity of the coldroom"""
         url = f"{self.base_url}/spes.fcgi/setvars?v382={payload['value']}"
         response = self.session.get(url, headers=self.headers, verify=False, cookies=self.session.cookies)
         logging.info(f"Humidity set to {payload['value']}")
@@ -189,13 +193,14 @@ class ThermalStatus:
 
     def loop(self, client):
         """Run the loop"""
+        client.loop_start()
         self.login_session()
         while True:
             active = self.check_status()
             if active:
                 status_list = self.get_status()
                 for status, publish_topic in zip(status_list, list(self.json_interesting_dict.keys())):
-                    ret = client.publish(f"/coldroom/{publish_topic}", json.dumps(status))
+                    ret = client.publish(f"{self.TOPIC_ROOT}/{publish_topic}", json.dumps(status))
                 time.sleep(1)
             else:
                 self.authenticate()
