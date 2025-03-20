@@ -47,7 +47,12 @@ class ThermalStatus:
         self.command_handlers = {
             "set_temperature": self.set_temperature,
             "set_humidity": self.set_humidity,
-            "set_light": self.set_light,
+            "control_light": self.control_light,
+            "control_temperature": self.control_temperature,
+            "control_humidity": self.control_humidity,
+            "control_external_dry_air": self.control_external_dry_air,
+            "run": self.run,
+            "stop": self.stop,
         }
 
     def login_session(self):
@@ -151,8 +156,8 @@ class ThermalStatus:
             """On message callback"""
             try:
                 command = message.topic.split("/")[-1]
-                payload = json.loads(message.payload)
-                self.command_handlers[command](payload)
+                value = message.payload.decode()
+                self.command_handlers[command](float(value))
             except Exception as e:
                 logging.error(f"Error: {e}")
                 self.publish_response(client, command, {"status": "error", "message": str(e)})
@@ -169,26 +174,56 @@ class ThermalStatus:
         topic = f"{self.TOPIC_RESP}/{command}"
         client.publish(topic, json.dumps(response))
 
-    def set_light(self, payload):
+    def control_light(self, value):
         """Set the light of the coldroom"""
-        # Example of url http://localhost:1080/spes.fcgi/setvars?v289=1
-        url = f"{self.base_url}/spes.fcgi/setvars?v289={payload['status']}"
+        url = f"{self.base_url}/spes.fcgi/setvars?v289={value}"
         response = self.session.get(url, headers=self.headers, verify=False, cookies=self.session.cookies)
-        logging.info(f"Light set to {payload['status']}")
+        logging.info(f"Light set to {value}")
         return response
 
-    def set_temperature(self, payload):
+    def set_temperature(self, value):
         """Set the temperature of the coldroom"""
-        url = f"{self.base_url}/spes.fcgi/setvars?v380={payload['value']}"
+        url = f"{self.base_url}/spes.fcgi/setvars?v380={value}"
         response = self.session.get(url, headers=self.headers, verify=False, cookies=self.session.cookies)
-        logging.info(f"Temperature set to {payload['value']}")
+        logging.info(f"Temperature set to {value} C")
         return response
 
-    def set_humidity(self, payload):
+    def set_humidity(self, value):
         """Set the humidity of the coldroom"""
-        url = f"{self.base_url}/spes.fcgi/setvars?v382={payload['value']}"
+        url = f"{self.base_url}/spes.fcgi/setvars?v382={value}"
         response = self.session.get(url, headers=self.headers, verify=False, cookies=self.session.cookies)
-        logging.info(f"Humidity set to {payload['value']}")
+        logging.info(f"Humidity set to {value} %")
+        return response
+
+    def control_temperature(self, value):
+        """Control the temperature of the coldroom"""
+        url = f"{self.base_url}/spes.fcgi/setvars?v365={value}"
+        response = self.session.get(url, headers=self.headers, verify=False, cookies=self.session.cookies)
+        logging.info(f"Temperature control set to {value}")
+        return response
+
+    def control_humidity(self, value):
+        url = f"{self.base_url}/spes.fcgi/setvars?v366={value}"
+        response = self.session.get(url, headers=self.headers, verify=False, cookies=self.session.cookies)
+        logging.info(f"Humidity control set to {value}")
+        return response
+
+    def control_external_dry_air(self, value):
+        url = f"{self.base_url}/spes.fcgi/setvars?v363={value}"
+        response = self.session.get(url, headers=self.headers, verify=False, cookies=self.session.cookies)
+        logging.info(f"External dry air control set to {value}")
+        return response
+
+    def run(self, value):
+        url = f"{self.base_url}/spes.fcgi/chamber/run"
+        response = self.session.get(url, headers=self.headers, verify=False, cookies=self.session.cookies)
+        logging.info(f"Chamber run")
+        return response
+
+    def stop(self, value):
+        url = f"{self.base_url}/spes.fcgi/chamber/stop"
+        response = self.session.get(url, headers=self.headers, verify=False, cookies=self.session.cookies)
+        logging.info(f"Chamber stop")
         return response
 
     def loop(self, client):
