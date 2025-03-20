@@ -5,7 +5,8 @@ RUN yum install -y pugixml-devel
 #USER cms
 RUN mkdir -p workdir
 WORKDIR ./workdir
-RUN git clone --recurse-submodules https://gitlab.cern.ch/cms_tk_ph2/power_supply.git
+RUN git clone  --recurse-submodules https://gitlab.cern.ch/cms_tk_ph2/power_supply.git
+RUN cd power_supply/NetworkUtils &&  git checkout pingDoesNotDelete
 RUN ls /
 RUN tar -xzvf /CAENHVWrapper-6.3.tgz && cd CAENHVWrapper-6.3 && ./install.sh
 RUN cd power_supply && mkdir build  && cd build && cmake .. && make -j 8

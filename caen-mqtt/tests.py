@@ -65,8 +65,6 @@ def loop():
     alarm=0
     while(True) :
       try:
-        mqttclient = paho.Client(paho.CallbackAPIVersion.VERSION1, "CAEN")
-        mqttclient.connect(broker,brokerport)
         tcpClass = tcp_util(caencontroller,controllerport)
         tcpClass.sendMessage(message)
         data = b''
@@ -87,10 +85,12 @@ def loop():
                 value=float(value)
                 parsedData[key]=value
         #print(json.dumps(parsedData,indent=4),flush=True)
+        mqttclient = paho.Client(paho.CallbackAPIVersion.VERSION1, "CAEN")
+        mqttclient.connect(broker,brokerport)
         ret=mqttclient.publish("/caenstatus/full",json.dumps(parsedData))
         print("ok")
-        sleep(5)
-        if alarm > 3 :
+        sleep(1)
+        if alarm > 5 :
            print("We are back" , alarm)
            mqttclient.publish("/alarm","CAEN is back (%s)"%alarm)
         alarm=0
@@ -98,10 +98,9 @@ def loop():
       except Exception as e:
         print(e)
         alarm+=1
-        if alarm % 60 == 4 :
+        if alarm % 60 == 6 :
           print("Sending alarm",alarm)
-          ret=mqttclient.publish("/alarm","Cannot receive or send data, CAEN is off or MQTT server down (%s)"%alarm)
-          print(ret)
+          mqttclient.publish("/alarm","Cannot receive or send data, CAEN is off or MQTT server down (%s)"%alarm)
         # retry first a few times
         if alarm > 3:
             print("Cannot receive or send data, CAEN is off or MQTT server down, sleeping 60 seconds",alarm,flush=True)

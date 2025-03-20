@@ -48,8 +48,10 @@ services:
       - ./marta-mqtt/:/scripts/
     restart: always
     logging:
+      driver: "k8s-file"
       options:
-        max-size: 50m
+        max_size: "50m"
+        max_backups: "3"
   testnode:
     build: testnode 
     volumes:
@@ -84,8 +86,8 @@ services:
     environment:
       - COLDROOM_USERNAME=${COLDROOM_USERNAME}
       - COLDROOM_PASSWORD=${COLDROOM_PASSWORD}
-    depends_on: 
-      - mosquitto
+#    depends_on: 
+#      - mosquitto
     logging:
       options:
         max-size: 50m
@@ -94,9 +96,9 @@ services:
     user: 499:499
     build: caen-mqtt
     restart: always
-    depends_on: 
-      - caen
-      - mosquitto
+#    depends_on: 
+#      - caen
+#      - mosquitto
     logging:
       options:
         max-size: 50m
@@ -142,9 +144,9 @@ services:
     restart: always
     volumes:
       - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
-    depends_on:
-      - mosquitto
-      - influxdb
+#    depends_on:
+#      - mosquitto
+#      - influxdb
     logging:
       options:
         max-size: 50m
@@ -161,8 +163,8 @@ services:
       - ${DATA_PREFIX}/grafana/grafana-data:/var/lib/grafana
     environment:
       - GF_AUTH_ANONYMOUS_ENABLED=true
-    depends_on:
-      - influxdb
+#    depends_on:
+#      - influxdb
     logging:
       options:
         max-size: 50m
