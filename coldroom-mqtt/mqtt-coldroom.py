@@ -12,11 +12,13 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
+
 def get_dew_point_c(t_air_c, rel_humidity):
     A = 17.27
     B = 237.7
-    alpha = ((A * t_air_c) / (B + t_air_c)) + math.log(rel_humidity/100.0)
+    alpha = ((A * t_air_c) / (B + t_air_c)) + math.log(rel_humidity / 100.0)
     return (B * alpha) / (A - alpha)
+
 
 class ThermalStatus:
     """Class to get the status of the coldroom"""
@@ -51,6 +53,7 @@ class ThermalStatus:
             "control_temperature": self.control_temperature,
             "control_humidity": self.control_humidity,
             "control_external_dry_air": self.control_external_dry_air,
+            "reset_alarms": self.reset_alarms,
             "run": self.run,
             "stop": self.stop,
         }
@@ -292,6 +295,12 @@ class ThermalStatus:
         logging.info(f"External dry air control set to {value}")
         return response
 
+    def reset_alarms(self):
+        url = f"{self.base_url}/spes.fcgi/setvars?v283=1"
+        response = self.session.get(url, headers=self.headers, verify=False, cookies=self.session.cookies)
+        logging.info(f"Alarms reset")
+        return response
+
     def run(self):
         url = f"{self.base_url}/spes.fcgi/chamber/run"
         response = self.session.get(url, headers=self.headers, verify=False, cookies=self.session.cookies)
@@ -314,6 +323,8 @@ class ThermalStatus:
             if active:
                 response = self.get_status()
                 parsed_response, current_alarms = self.parse(response)
+                active_alarms = int(len(current_alarms) > 0)
+                parsed_response["active_alarms"] = active_alarms
                 client.publish(f"{self.TOPIC_ROOT}/state", json.dumps(parsed_response))
                 if current_alarms:
                     current_alarms_id = []
