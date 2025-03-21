@@ -1,4 +1,5 @@
 import os
+import math
 import requests
 import inspect
 import time
@@ -11,6 +12,11 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
+def get_dew_point_c(t_air_c, rel_humidity):
+    A = 17.27
+    B = 237.7
+    alpha = ((A * t_air_c) / (B + t_air_c)) + math.log(rel_humidity/100.0)
+    return (B * alpha) / (A - alpha)
 
 class ThermalStatus:
     """Class to get the status of the coldroom"""
@@ -90,6 +96,12 @@ class ThermalStatus:
                     "setpoint": float(response[selected_key]["channels"]["Mis_CH1"]["SETPOINT"]),
                     "status": int(response[selected_key]["channels"]["Mis_CH1"]["STATUS"]),
                 }
+
+                parsed_response["dew_point_c"] = get_dew_point_c(
+                    parsed_response["ch_temperature"]["value"],
+                    parsed_response["ch_humidity"]["value"],
+                )
+
             elif selected_key == "manual/refresh":
                 parsed_response["dry_air_status"] = int(
                     (int(response[selected_key]["CONTACTS_D"]["DED"]) & (1 << 7)) != 0
