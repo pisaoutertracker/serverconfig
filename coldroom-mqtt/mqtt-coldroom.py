@@ -302,7 +302,7 @@ class ThermalStatus:
             if active:
                 response = self.get_status()
                 parsed_response, current_alarms = self.parse(response)
-                # client.publish(f"{self.TOPIC_ROOT}/state", json.dumps(parsed_response))
+                client.publish(f"{self.TOPIC_ROOT}/state", json.dumps(parsed_response))
                 if current_alarms:
                     current_alarms_id = []
                     current_time = time.time()
@@ -311,12 +311,12 @@ class ThermalStatus:
                         current_alarms_id.append(alarm_id)
                         if alarm_id not in last_published_alarms:
                             last_published_alarms[alarm_id] = current_time
-                            # client.publish(self.TOPIC_ALARMS, alarm)
+                            client.publish(self.TOPIC_ALARMS, alarm)
                         else:
                             last_time = last_published_alarms[alarm_id]
                             if current_time - last_time > 3600:
                                 last_published_alarms[alarm_id] = current_time
-                                # client.publish(self.TOPIC_ALARMS, alarm)
+                                client.publish(self.TOPIC_ALARMS, alarm)
                     for existing_id in last_published_alarms:
                         if existing_id not in current_alarms_id:
                             del last_published_alarms[existing_id]
