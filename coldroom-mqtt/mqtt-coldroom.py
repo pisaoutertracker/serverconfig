@@ -60,7 +60,10 @@ class ThermalStatus:
     def parse(self, response):
         """Parse the response"""
         parsed_response = {}
+        alarms = []
         for selected_key in self.selected_keys:
+            if selected_key not in response:
+                continue
             if selected_key == "light_door_status":
                 # Check if this is the door open status
                 parsed_response["CmdDoorUnlock_Reff"] = int(response[selected_key]["CmdDoorUnlock_Reff"])
@@ -78,13 +81,13 @@ class ThermalStatus:
             elif selected_key == "dashboard":
                 parsed_response["running"] = response[selected_key]["running"]
                 parsed_response["ch_temperature"] = {
-                    "value": int(response[selected_key]["channels"]["Mis_CH0"]["VALUE"]),
-                    "setpoint": int(response[selected_key]["channels"]["Mis_CH0"]["SETPOINT"]),
+                    "value": float(response[selected_key]["channels"]["Mis_CH0"]["VALUE"]),
+                    "setpoint": float(response[selected_key]["channels"]["Mis_CH0"]["SETPOINT"]),
                     "status": int(response[selected_key]["channels"]["Mis_CH0"]["STATUS"]),
                 }
                 parsed_response["ch_humidity"] = {
-                    "value": int(response[selected_key]["channels"]["Mis_CH1"]["VALUE"]),
-                    "setpoint": int(response[selected_key]["channels"]["Mis_CH1"]["SETPOINT"]),
+                    "value": float(response[selected_key]["channels"]["Mis_CH1"]["VALUE"]),
+                    "setpoint": float(response[selected_key]["channels"]["Mis_CH1"]["SETPOINT"]),
                     "status": int(response[selected_key]["channels"]["Mis_CH1"]["STATUS"]),
                 }
             elif selected_key == "manual/refresh":
@@ -160,12 +163,19 @@ class ThermalStatus:
         response = {}
         for json_name in self.selected_keys:
             url = f"{self.base_url}/spes.fcgi/{json_name}"
-            response[json_name] = self.session.get(
-                url,
-                headers=self.headers,
-                verify=False,
-                cookies=self.session.cookies,
-            )
+            try:
+                raw_response = self.session.get(
+                    url,
+                    headers=self.headers,
+                    verify=False,
+                    cookies=self.session.cookies,
+                )
+                try:
+                    response[json_name] = raw_response.json()
+                except Exception as e:
+                    logging.error(f"Error when decoding {json_name}: {e}")
+            except Exception as e:
+                logging.error(f"Error when getting {json_name}: {e}")
             time.sleep(1)
             logging.info(f"{json_name} retrieved")
         return response
@@ -292,7 +302,7 @@ class ThermalStatus:
             if active:
                 response = self.get_status()
                 parsed_response, current_alarms = self.parse(response)
-                client.publish(f"{self.TOPIC_ROOT}/state", json.dumps(parsed_response))
+                # client.publish(f"{self.TOPIC_ROOT}/state", json.dumps(parsed_response))
                 if current_alarms:
                     current_alarms_id = []
                     current_time = time.time()
@@ -301,12 +311,12 @@ class ThermalStatus:
                         current_alarms_id.append(alarm_id)
                         if alarm_id not in last_published_alarms:
                             last_published_alarms[alarm_id] = current_time
-                            client.publish(self.TOPIC_ALARMS, alarm)
+                            # client.publish(self.TOPIC_ALARMS, alarm)
                         else:
                             last_time = last_published_alarms[alarm_id]
                             if current_time - last_time > 3600:
                                 last_published_alarms[alarm_id] = current_time
-                                client.publish(self.TOPIC_ALARMS, alarm)
+                                # client.publish(self.TOPIC_ALARMS, alarm)
                     for existing_id in last_published_alarms:
                         if existing_id not in current_alarms_id:
                             del last_published_alarms[existing_id]
