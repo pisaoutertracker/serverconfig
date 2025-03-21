@@ -7,7 +7,7 @@ import paho.mqtt.client as mqtt
 import json
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.WARNING,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
@@ -79,7 +79,7 @@ class ThermalStatus:
                         parsed_response["door_status"] = 0
                 alarms = self.parse_alarms(response[selected_key]["alarms"])
             elif selected_key == "dashboard":
-                parsed_response["running"] = response[selected_key]["running"]
+                parsed_response["running"] = int(response[selected_key]["running"])
                 parsed_response["ch_temperature"] = {
                     "value": float(response[selected_key]["channels"]["Mis_CH0"]["VALUE"]),
                     "setpoint": float(response[selected_key]["channels"]["Mis_CH0"]["SETPOINT"]),
