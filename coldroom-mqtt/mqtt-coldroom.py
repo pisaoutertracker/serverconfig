@@ -1,5 +1,6 @@
 import os
 import requests
+import inspect
 import time
 import logging
 import paho.mqtt.client as mqtt
@@ -17,6 +18,7 @@ class ThermalStatus:
     TOPIC_CMDS = "/coldroom/cmd/#"
     TOPIC_RESP = "/coldroom/alarm"
     TOPIC_ROOT = "/coldroom"
+    TOPIC_ALARMS = "/alarm"
 
     def __init__(self):
         # Base url of the coldroom webserver
@@ -29,14 +31,6 @@ class ThermalStatus:
             "Connection": "keep-alive",
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
             "X-Requested-With": "XMLHttpRequest",
-        }
-        # Dict of the jsons to get
-        # TODO: parse or filter the jsons to get only the interesting data
-        # NOTE: string are not sent to the mqtt broker
-        self.json_interesting_dict = {
-            "light_door_status": [],
-            "status": [],
-            "dashboard": [],
         }
         # Start the session
         self.session = requests.Session()
@@ -54,6 +48,64 @@ class ThermalStatus:
             "run": self.run,
             "stop": self.stop,
         }
+
+        # Interesting jsons
+        self.selected_keys = [
+            "light_door_status",
+            "status",
+            "dashboard",
+            "manual/refresh",
+        ]
+
+    def parse(self, response):
+        """Parse the response"""
+        parsed_response = {}
+        for selected_key in self.selected_keys:
+            if selected_key == "light_door_status":
+                # Check if this is the door open status
+                parsed_response["CmdDoorUnlock_Reff"] = int(response[selected_key]["CmdDoorUnlock_Reff"])
+            elif selected_key == "status":
+                parsed_response["machine_time"] = response[selected_key]["machine_time"]
+                parsed_response["light"] = int(response[selected_key]["light"])
+                # Door status via alarm
+                for alarm_dict in response[selected_key]["alarms"]:
+                    if alarm_dict["name"] == "ALARM_06":
+                        parsed_response["door_status"] = 1
+                        break
+                    else:
+                        parsed_response["door_status"] = 0
+                alarms = self.parse_alarms(response[selected_key]["alarms"])
+            elif selected_key == "dashboard":
+                parsed_response["running"] = response[selected_key]["running"]
+                parsed_response["ch_temperature"] = {
+                    "value": int(response[selected_key]["channels"]["Mis_CH0"]["VALUE"]),
+                    "setpoint": int(response[selected_key]["channels"]["Mis_CH0"]["SETPOINT"]),
+                    "status": int(response[selected_key]["channels"]["Mis_CH0"]["STATUS"]),
+                }
+                parsed_response["ch_humidity"] = {
+                    "value": int(response[selected_key]["channels"]["Mis_CH1"]["VALUE"]),
+                    "setpoint": int(response[selected_key]["channels"]["Mis_CH1"]["SETPOINT"]),
+                    "status": int(response[selected_key]["channels"]["Mis_CH1"]["STATUS"]),
+                }
+            elif selected_key == "manual/refresh":
+                parsed_response["dry_air_status"] = int(
+                    (int(response[selected_key]["CONTACTS_D"]["DED"]) & (1 << 7)) != 0
+                )
+
+        return parsed_response, alarms
+
+    def parse_alarms(self, alarms):
+        """Parse the alarms"""
+        parsed_alarms = []
+        for alarm_dict in alarms:
+            if alarm_dict["name"] == "ALARM_06":
+                # Skip Door Open alarm
+                continue
+            timestamp = time.ctime(alarm_dict["timestamp"])
+            eng_text = alarm_dict["text"]["English"]
+            alarm_string = f"[MyKratos/Coldroom]({timestamp}) == {eng_text}"
+            parsed_alarms.append(alarm_string)
+        return parsed_alarms
 
     def login_session(self):
         """Login to the session"""
@@ -105,19 +157,18 @@ class ThermalStatus:
 
     def get_status(self):
         """Get the status of the coldroom"""
-        status_response_list = []
-        for json_name in self.json_interesting_dict.keys():
+        response = {}
+        for json_name in self.selected_keys:
             url = f"{self.base_url}/spes.fcgi/{json_name}"
-            status_response = self.session.get(
+            response[json_name] = self.session.get(
                 url,
                 headers=self.headers,
                 verify=False,
                 cookies=self.session.cookies,
             )
             time.sleep(1)
-            status_response_list.append(status_response.json())
             logging.info(f"{json_name} retrieved")
-        return status_response_list
+        return response
 
     def check_status(self):
         """Check if the session is active"""
@@ -156,11 +207,16 @@ class ThermalStatus:
             """On message callback"""
             try:
                 command = message.topic.split("/")[-1]
-                value = message.payload.decode()
-                self.command_handlers[command](float(value))
+                function = self.command_handlers[command]
+                function_args = inspect.getfullargspec(function).args
+                if "value" in function_args:
+                    value = message.payload.decode()
+                    function(float(value))
+                else:
+                    function()
             except Exception as e:
                 logging.error(f"Error: {e}")
-                self.publish_response(client, command, {"status": "error", "message": str(e)})
+                # self.publish_response(client, command, {"status": "error", "message": str(e)})
 
         client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, "COLDROOM")
         client.on_connect = on_connect
@@ -214,13 +270,13 @@ class ThermalStatus:
         logging.info(f"External dry air control set to {value}")
         return response
 
-    def run(self, value):
+    def run(self):
         url = f"{self.base_url}/spes.fcgi/chamber/run"
         response = self.session.get(url, headers=self.headers, verify=False, cookies=self.session.cookies)
         logging.info(f"Chamber run")
         return response
 
-    def stop(self, value):
+    def stop(self):
         url = f"{self.base_url}/spes.fcgi/chamber/stop"
         response = self.session.get(url, headers=self.headers, verify=False, cookies=self.session.cookies)
         logging.info(f"Chamber stop")
@@ -230,12 +286,30 @@ class ThermalStatus:
         """Run the loop"""
         client.loop_start()
         self.login_session()
+        last_published_alarms = {}
         while True:
             active = self.check_status()
             if active:
-                status_list = self.get_status()
-                for status, publish_topic in zip(status_list, list(self.json_interesting_dict.keys())):
-                    ret = client.publish(f"{self.TOPIC_ROOT}/{publish_topic}", json.dumps(status))
+                response = self.get_status()
+                parsed_response, current_alarms = self.parse(response)
+                client.publish(f"{self.TOPIC_ROOT}/state", json.dumps(parsed_response))
+                if current_alarms:
+                    current_alarms_id = []
+                    current_time = time.time()
+                    for alarm in current_alarms:
+                        alarm_id = alarm.split("==")[-1].strip()
+                        current_alarms_id.append(alarm_id)
+                        if alarm_id not in last_published_alarms:
+                            last_published_alarms[alarm_id] = current_time
+                            client.publish(self.TOPIC_ALARMS, alarm)
+                        else:
+                            last_time = last_published_alarms[alarm_id]
+                            if current_time - last_time > 3600:
+                                last_published_alarms[alarm_id] = current_time
+                                client.publish(self.TOPIC_ALARMS, alarm)
+                    for existing_id in last_published_alarms:
+                        if existing_id not in current_alarms_id:
+                            del last_published_alarms[existing_id]
                 time.sleep(1)
             else:
                 self.authenticate()
