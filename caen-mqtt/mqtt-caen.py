@@ -72,12 +72,13 @@ def loop():
         data = b''
         while(True) :
             try:
-                chunk = tcpClass.socket.recv(BUFFER_SIZE)[8:]
+                chunk = tcpClass.socket.recv(BUFFER_SIZE)
                 if not chunk:
                     break
                 data+=chunk
             except:
                 break
+        data=data[8:]
         print(data[-10:])
         data=data.decode("utf-8")
         parsedData={}
