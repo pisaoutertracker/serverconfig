@@ -91,6 +91,8 @@ services:
     logging:
       options:
         max-size: 50m
+    volumes:
+      - ./coldroom-mqtt/:/scripts/
   caen-mqtt:
     container_name: caen-mqtt
     user: 499:499

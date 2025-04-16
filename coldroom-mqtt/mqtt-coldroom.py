@@ -28,6 +28,7 @@ class ThermalStatus:
 
     def __init__(self):
         # Base url of the coldroom webserver
+        self.counter=0
         self.base_url_1 = "http://192.168.0.254"  # cabled
         self.base_url_2 = "http://11.0.0.1"  # wifi
         # Headers for the requests
@@ -188,7 +189,7 @@ class ThermalStatus:
                     logging.error(f"Error when decoding {json_name}: {e}")
             except Exception as e:
                 logging.error(f"Error when getting {json_name}: {e}")
-            time.sleep(1)
+       #     time.sleep(1)
             logging.info(f"{json_name} retrieved")
         return response
 
@@ -235,7 +236,9 @@ class ThermalStatus:
                     value = message.payload.decode()
                     function(float(value))
                 else:
-                    function()
+                    function()                
+                #self.update(client)
+                self.counter=-2
             except Exception as e:
                 logging.error(f"Error: {e}")
                 # self.publish_response(client, command, {"status": "error", "message": str(e)})
@@ -287,6 +290,7 @@ class ThermalStatus:
         return response
 
     def control_external_dry_air(self, value):
+        value= int(value) << 7
         url = f"{self.base_url}/spes.fcgi/setvars?v363={value}"
         response = self.session.get(url, headers=self.headers, verify=False, cookies=self.session.cookies)
         logging.info(f"External dry air control set to {value}")
@@ -304,37 +308,47 @@ class ThermalStatus:
         logging.info(f"Chamber stop")
         return response
 
-    def loop(self, client):
-        """Run the loop"""
-        client.loop_start()
-        self.login_session()
-        last_published_alarms = {}
-        while True:
+    def update(self, client):
+            """Update """
             active = self.check_status()
-            if active:
-                response = self.get_status()
-                parsed_response, current_alarms = self.parse(response)
-                client.publish(f"{self.TOPIC_ROOT}/state", json.dumps(parsed_response))
-                if current_alarms:
+            if not active:
+                self.authenticate()
+            print("Here to update")
+            response = self.get_status()
+            print(response)
+            parsed_response, current_alarms = self.parse(response)
+            client.publish(f"{self.TOPIC_ROOT}/state", json.dumps(parsed_response))
+            if current_alarms:
                     current_alarms_id = []
                     current_time = time.time()
                     for alarm in current_alarms:
                         alarm_id = alarm.split("==")[-1].strip()
                         current_alarms_id.append(alarm_id)
-                        if alarm_id not in last_published_alarms:
-                            last_published_alarms[alarm_id] = current_time
+                        if alarm_id not in self.last_published_alarms:
+                            self.last_published_alarms[alarm_id] = current_time
                             client.publish(self.TOPIC_ALARMS, alarm)
                         else:
-                            last_time = last_published_alarms[alarm_id]
+                            last_time = self.last_published_alarms[alarm_id]
                             if current_time - last_time > 3600:
-                                last_published_alarms[alarm_id] = current_time
+                                self.last_published_alarms[alarm_id] = current_time
                                 client.publish(self.TOPIC_ALARMS, alarm)
-                    for existing_id in last_published_alarms:
+                    for existing_id in self.last_published_alarms:
                         if existing_id not in current_alarms_id:
-                            del last_published_alarms[existing_id]
-                time.sleep(1)
-            else:
-                self.authenticate()
+                            del self.last_published_alarms[existing_id]
+
+    def loop(self, client):
+        """Run the loop"""
+        client.loop_start()
+        self.login_session()
+        self.last_published_alarms = {}
+        self.counter=0
+        while True:
+            if self.counter % 10 ==0 :
+                    self.update(client)
+                    self.counter=0
+            time.sleep(1)
+            self.counter+=1
+                    
 
 
 broker = "192.168.0.45"
