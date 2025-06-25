@@ -6,8 +6,10 @@ RUN yum install -y pugixml-devel
 RUN mkdir -p workdir
 WORKDIR ./workdir
 RUN git clone  --recurse-submodules https://gitlab.cern.ch/cms_tk_ph2/power_supply.git
-RUN cd power_supply/NetworkUtils &&  git checkout pingDoesNotDelete
+RUN cd power_supply/NetworkUtils &&  git checkout master
+RUN cd power_supply/ &&  git checkout fixOVVcaen 
 RUN ls /
+COPY CAENHVWrapper-6.3.tgz /CAENHVWrapper-6.3.tgz
 RUN tar -xzvf /CAENHVWrapper-6.3.tgz && cd CAENHVWrapper-6.3 && ./install.sh
 RUN cd power_supply && mkdir build  && cd build && cmake .. && make -j 8
 #RUN timedatectl set-timezone Europe/Rome

@@ -31,7 +31,7 @@ services:
     volumes:
       - ./caenconfig.xml:/config.xml
       - ./caen/caen_server.sh:/caen_server.sh
-      - /scratch/CAENHVWrapper-6.3.tgz:/CAENHVWrapper-6.3.tgz
+#      - ./CAENHVWrapper-6.3.tgz:/CAENHVWrapper-6.3.tgz
     restart: always
     ports:
     - "7000:7000" 
@@ -104,6 +104,8 @@ services:
     logging:
       options:
         max-size: 50m
+    volumes:
+      - ./caen-mqtt/:/scripts/
   mosquitto:
     image: eclipse-mosquitto
     user: 499:499

@@ -27,6 +27,7 @@ class ModbusMetric:
 
 class ModbusSetParam(ModbusMetric):
     def write(self, value):
+        print("Writing", self.address, value)
         self.manager.write(self.address, value)
 
 class ModbusBool(ModbusMetric):
@@ -41,7 +42,9 @@ class ModbusSetBool(ModbusBool, ModbusSetParam):
     def write(self, value):
         value = bool(value)
         curr_values = self.manager.get(self.address)[0]
+        print("Cur",bin(curr_values))
         new_values = (curr_values & ~(0b1 << self.bit)) | (value << self.bit)
+        print("New",bin(new_values))
         super().write(new_values)
 
 class ModbusInt(ModbusMetric):

@@ -90,7 +90,7 @@ class ThermalStatus:
                 parsed_response["ch_temperature"] = {
                     "value": float(response[selected_key]["channels"]["Mis_CH0"]["VALUE"]),
                     "setpoint": float(response[selected_key]["channels"]["Mis_CH0"]["SETPOINT"]),
-                    "status": int(response[selected_key]["channels"]["Mis_CH0"]["STATUS"]),
+#                    "status": int(response[selected_key]["channels"]["Mis_CH0"]["STATUS"]),
                 }
                 parsed_response["ch_humidity"] = {
                     "value": float(response[selected_key]["channels"]["Mis_CH1"]["VALUE"]),
@@ -107,6 +107,13 @@ class ThermalStatus:
                 parsed_response["dry_air_status"] = int(
                     (int(response[selected_key]["CONTACTS_D"]["DED"]) & (1 << 7)) != 0
                 )
+                parsed_response["ch_humidity"]["status"] = int(
+                    (int(response[selected_key]["BSD"]) & (1 << 1)) != 0
+                )
+                parsed_response["ch_temperature"]["status"] = int(
+                    (int(response[selected_key]["BSD"]) & (1)) != 0
+                )
+
 
         return parsed_response, alarms
 
@@ -305,6 +312,7 @@ class ThermalStatus:
     def stop(self):
         url = f"{self.base_url}/spes.fcgi/chamber/stop"
         response = self.session.get(url, headers=self.headers, verify=False, cookies=self.session.cookies)
+        print("STOP",response,url)
         logging.info(f"Chamber stop")
         return response
 

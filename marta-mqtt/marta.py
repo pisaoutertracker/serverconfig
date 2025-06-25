@@ -64,6 +64,7 @@ class MARTAClient(object):
         self.modbus_manager = modbus.ModbusRegisterManager(self.modbus_client, unit=self.slaveId)
         self.register_map = dict()
         for name,cfg in self.config["registers"].items():
+            print(name,cfg)
             self.register_map[name] = self.modbus_manager.makeProxy(name, **cfg)
 
         log.info(f"Done - state is {self.state}")
@@ -93,6 +94,7 @@ class MARTAClient(object):
     def start_co2(self):
         try:
             self.register_map["set_start_co2"].write(1)
+            print("WRITING REGISTER")
         except ModbusException as e:
             log.error(f"Problem writing modbus register: {e}")
             self.fsm_disconnect_modbus()
@@ -100,6 +102,7 @@ class MARTAClient(object):
     def stop_co2(self):
         try:
             self.register_map["set_start_co2"].write(0)
+            print("WRITING REGISTER2",)
         except ModbusException as e:
             log.error(f"Problem writing modbus register: {e}")
             self.fsm_disconnect_modbus()
@@ -156,9 +159,10 @@ class MARTAClient(object):
         commands = ["start_chiller", "start_co2", "stop_co2", "stop_chiller",
                     "set_flow_active", "set_temperature_setpoint", "set_speed_setpoint", "set_flow_setpoint",
                     "clear_alarms", "reconnect", "refresh"]
+#        commands = ["refresh"]
         parts = topic.split("/")
-        assert(len(parts) == 3)
-        device, cmd, command = parts
+        assert(len(parts) == 4)
+        _ , device, cmd, command = parts
         assert(device == "MARTA")
         assert(cmd == "cmd")
         assert(command in commands)
@@ -233,15 +237,14 @@ class MARTAClient(object):
         def on_connect(client, userdata, flags, rc):
             # Subscribing in on_connect() means that if we lose the connection and
             # reconnect then subscriptions will be renewed.
-            client.subscribe(f"MARTA/cmd/#")
+            client.subscribe(f"/MARTA/cmd/#")
             # make sure the initial values are published at restart
             self.publish(force=True)
 
         def on_message(client, userdata, msg):
             log.debug(f"Received {msg.topic}, {msg.payload}")
             # MQTT catches all exceptions in the callbacks, so they"ll go unnoticed
-            print("WE DO NOT CONTROL MARTA FOR NOW")
-            return
+            print("Recieved", msg.topic, msg.payload)
             try:
                 self.command(msg.topic, msg.payload)
             except Exception as e:
@@ -280,11 +283,11 @@ if __name__ == "__main__":
         log.setLevel(logging.DEBUG)
 
     device = MARTAClient(args.marta_ip, args.slave_id, args.config)
-    device.fsm_connect_modbus()
+    #device.fsm_connect_modbus()
     device.launch_mqtt(args.mqtt_host)
-    try:
-        print("try to Connect")
-        device.fsm_connect_modbus()
-        print("Connect")
-    except ModbusException as e:
-        log.error(e)
+    # try:
+    #     print("try to Connect")
+    #     device.fsm_connect_modbus()
+    #     print("Connect")
+    # except ModbusException as e:
+    #     log.error(e)

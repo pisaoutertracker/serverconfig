@@ -78,16 +78,23 @@ def loop():
                 data+=chunk
             except:
                 break
+        print("received",len(data))
         data=data[8:]
         print(data[-10:])
         data=data.decode("utf-8")
         parsedData={}
         for token in data.split(',') :
             if token.startswith(psid):
+                sp=token.split(":")
+                if len(sp) != 2 :
+                    print("More than 2?!?", sp)
+                    print(data)
+                    
                 key,value=token.split(":")
                 value=float(value)
                 parsedData[key]=value
         #print(json.dumps(parsedData,indent=4),flush=True)
+        print("received",len(data))
         ret=mqttclient.publish("/caenstatus/full",json.dumps(parsedData))
         print("ok")
         sleep(5)
