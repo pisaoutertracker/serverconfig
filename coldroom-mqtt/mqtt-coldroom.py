@@ -121,8 +121,8 @@ class ThermalStatus:
         """Parse the alarms"""
         parsed_alarms = []
         for alarm_dict in alarms:
-            if alarm_dict["name"] == "ALARM_06":
-                # Skip Door Open alarm
+            if alarm_dict["name"] == "ALARM_06" or alarm_dict["name"] == "ALARM_252" :
+                # Skip Door Open alarm and maintainance
                 continue
             timestamp = time.ctime(alarm_dict["timestamp"])
             eng_text = alarm_dict["text"]["English"]
