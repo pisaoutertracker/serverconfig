@@ -1,15 +1,15 @@
 <Devices>
         <PowerSupply InUse="Yes" ID="caen" Model="CAEN" Series="SY4527" Connection="Ethernet" IPAddress="192.168.0.102" Timeout="3" Port="9221" UserName="admin" Password="burnincms"> 
-   <Channel ID="HV0.1" Channel="0" Slot="0" InUse="Yes" I0Set="100" V0Set="300" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
-   <Channel ID="HV0.2" Channel="1" Slot="0" InUse="Yes" I0Set="100" V0Set="300" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
-   <Channel ID="HV0.3" Channel="2" Slot="0" InUse="Yes" I0Set="100" V0Set="300" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
-   <Channel ID="HV0.4" Channel="3" Slot="0" InUse="Yes" I0Set="100" V0Set="300" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
-   <Channel ID="HV0.5" Channel="4" Slot="0" InUse="Yes" I0Set="100" V0Set="300" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
-   <Channel ID="HV0.6" Channel="5" Slot="0" InUse="Yes" I0Set="100" V0Set="300" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
-   <Channel ID="HV0.7" Channel="6" Slot="0" InUse="Yes" I0Set="100" V0Set="300" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
-   <Channel ID="HV0.8" Channel="7" Slot="0" InUse="Yes" I0Set="100" V0Set="300" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
-   <Channel ID="HV0.9" Channel="8" Slot="0" InUse="Yes" I0Set="100" V0Set="300" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
-   <Channel ID="HV0.10" Channel="9" Slot="0" InUse="Yes" I0Set="100" V0Set="300" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
+   <Channel ID="HV0.1" Channel="0" Slot="0" InUse="Yes" I0Set="100" V0Set="600" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
+   <Channel ID="HV0.2" Channel="1" Slot="0" InUse="Yes" I0Set="100" V0Set="600" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
+   <Channel ID="HV0.3" Channel="2" Slot="0" InUse="Yes" I0Set="100" V0Set="600" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
+   <Channel ID="HV0.4" Channel="3" Slot="0" InUse="Yes" I0Set="100" V0Set="600" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
+   <Channel ID="HV0.5" Channel="4" Slot="0" InUse="Yes" I0Set="100" V0Set="600" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
+   <Channel ID="HV0.6" Channel="5" Slot="0" InUse="Yes" I0Set="100" V0Set="600" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
+   <Channel ID="HV0.7" Channel="6" Slot="0" InUse="Yes" I0Set="100" V0Set="600" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
+   <Channel ID="HV0.8" Channel="7" Slot="0" InUse="Yes" I0Set="100" V0Set="600" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
+   <Channel ID="HV0.9" Channel="8" Slot="0" InUse="Yes" I0Set="100" V0Set="600" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
+   <Channel ID="HV0.10" Channel="9" Slot="0" InUse="Yes" I0Set="100" V0Set="600" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
    <Channel ID="HV0.11" Channel="10" Slot="0" InUse="Yes" I0Set="100" V0Set="300" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
    <Channel ID="HV0.12" Channel="11" Slot="0" InUse="Yes" I0Set="100" V0Set="300" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
 
