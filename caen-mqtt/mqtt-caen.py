@@ -7,7 +7,7 @@ class tcp_util():
         self.ip          = ip
         self.port        = port
         self.socket      = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.settimeout(1)
+#        self.socket.settimeout(1)
 
         self.headerBytes = 8 
 
@@ -74,8 +74,13 @@ def loop():
             try:
                 chunk = tcpClass.socket.recv(BUFFER_SIZE)
                 if not chunk:
+                    print("No more data?!?")
                     break
                 data+=chunk
+                length = data[3] | (data[2] << 8) | (data[1] << 16) | (data[0] << 24)
+                if len(data) >= length :
+                    break
+                print("Need more data")
             except:
                 break
         print("received",len(data))

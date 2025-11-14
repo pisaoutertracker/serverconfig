@@ -10,7 +10,7 @@
    <Channel ID="HV0.8" Channel="7" Slot="0" InUse="Yes" I0Set="100" V0Set="600" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
    <Channel ID="HV0.9" Channel="8" Slot="0" InUse="Yes" I0Set="100" V0Set="600" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
    <Channel ID="HV0.10" Channel="9" Slot="0" InUse="Yes" I0Set="100" V0Set="600" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
-   <Channel ID="HV0.11" Channel="10" Slot="0" InUse="Yes" I0Set="100" V0Set="300" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
+   <Channel ID="HV0.11" Channel="10" Slot="0" InUse="Yes" I0Set="100" V0Set="600" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
    <Channel ID="HV0.12" Channel="11" Slot="0" InUse="Yes" I0Set="100" V0Set="300" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>
 
    <Channel ID="HV1.1" Channel="0" Slot="1" InUse="Yes" I0Set="100" V0Set="300" RUp="10" RDwn="10" Trip="0.1" RUpTime="100" RDwTime="100" UNVThr="0" OVVThr="801"/>

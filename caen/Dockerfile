@@ -5,8 +5,8 @@ RUN yum install -y pugixml-devel
 #USER cms
 RUN mkdir -p workdir
 WORKDIR ./workdir  
-RUN git clone  --recurse-submodules https://gitlab.cern.ch/cms_tk_ph2/power_supply.git
-RUN cd power_supply/NetworkUtils &&   git checkout master
+RUN git  clone --recurse-submodules https://gitlab.cern.ch/cms_tk_ph2/power_supply.git  
+RUN cd  power_supply/NetworkUtils   &&   git checkout AR_tests
 #RUN cd power_supply/ &&  git checkout fixOVVcaen 
 RUN cd power_supply/    # &&  git checkout master 
 RUN ls /
